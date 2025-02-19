@@ -5,9 +5,8 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
-#include <GameImage.h>
+#include <GameSprite.h>
 
-#include <images/face.h>
 #include <images/dude.h>
 
 // Touchscreen coordinates: (x, y) and pressure (z)
@@ -18,8 +17,8 @@ TFT_eSPI tft = TFT_eSPI();
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 
-TFT_eSprite background = TFT_eSprite(&tft);
-TFT_eSprite cat = TFT_eSprite(&tft);
+TFT_eSprite tft_sprite = TFT_eSprite(&tft);
+Game::Sprite sprite = Game::Sprite(&tft_sprite, image_dude, 128, 128, 2);
 
 void print_touch_to_serial(int touchX, int touchY, int touchZ)
 {
@@ -56,15 +55,14 @@ void setup()
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-
-  cat.setSwapBytes(true);
-  cat.createSprite(128, 128);
-  cat.pushImage(0, 0, 128, 128, image_dude);
+  
+  sprite.init();
+  sprite.startCycleFrames(1000);
 }
 
 void loop()
 {
   handle_touch();
-  cat.pushSprite(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4);
-  delay(100);
+
+  sprite.pushSprite(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4);
 }

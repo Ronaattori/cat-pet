@@ -1,0 +1,68 @@
+#include <Arduino.h>
+// #include "esp_timer.h"
+#include <GameSprite.h>
+
+Game::Sprite::Sprite(TFT_eSprite* sprite, const uint16_t* image, int spriteWidth, int spriteHeight, int frameCount)
+{
+    this->sprite = sprite;
+    this->image = image;
+    this->width = spriteWidth;
+    this->height = spriteHeight;
+    this->frameCount = frameCount;
+};
+
+void Game::Sprite::init()
+{
+    sprite->setSwapBytes(true);
+    sprite->createSprite(width, height);
+}
+
+static void pushNextFrameCallback(TimerHandle_t timer)
+{
+    Game::Sprite* sprite =  static_cast<Game::Sprite*>(pvTimerGetTimerID(timer));
+    sprite->pushNextFrame();
+}
+
+const uint16_t* Game::Sprite::getFrame(int frame)
+{
+    if (frame > frameCount - 1)
+    {
+        throw "Sprite doesn't contain enough frames";
+    }
+    return image + (width * height * frame);
+}
+int Game::Sprite::getNextFrame()
+{
+    // Roll over when we go over the max
+    return _currentFrame + 1 & frameCount - 1;
+}
+
+void Game::Sprite::pushFrame(int frame)
+{
+    const uint16_t* frameData = getFrame(frame);
+    _currentFrame = frame;
+    sprite->pushImage(0, 0, width, height, frameData);
+}
+
+void Game::Sprite::pushNextFrame()
+{
+    pushFrame(getNextFrame());
+}
+
+void Game::Sprite::pushSprite(uint32_t x, uint32_t y)
+{
+    sprite->pushSprite(x, y);
+}
+
+void Game::Sprite::startCycleFrames(int frameDurationMs)
+{
+    // Set the pointer to _this_ as the ID of the timer
+    // We can then fetch it in the callback and get a reference to the class instance
+    _timer = xTimerCreate("frameCycleTimer", pdMS_TO_TICKS(frameDurationMs), pdTRUE, static_cast<void*>(this), ::pushNextFrameCallback);
+    xTimerStart(_timer, 10);
+}
+
+void Game::Sprite::stopCycleFrames()
+{
+    xTimerStop(_timer, 10);
+}
