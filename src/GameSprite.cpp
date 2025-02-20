@@ -13,7 +13,10 @@ Game::Sprite::Sprite(TFT_eSprite* sprite, const uint16_t* image, int spriteWidth
 
 void Game::Sprite::init()
 {
-    sprite->setSwapBytes(true);
+    // Might want to experiment enabling these at some point
+    // sprite->setColorDepth(8);
+    // sprite->setSwapBytes(true);
+    // sprite->setAttribute(PSRAM_ENABLE, false);
     sprite->createSprite(width, height);
 }
 
@@ -52,6 +55,11 @@ void Game::Sprite::pushNextFrame()
 void Game::Sprite::pushSprite(uint32_t x, uint32_t y)
 {
     sprite->pushSprite(x, y);
+}
+
+void Game::Sprite::pushToSprite(Game::Sprite toSprite, uint32_t x, uint32_t y, uint16_t transparent)
+{
+    sprite->pushToSprite(toSprite.sprite, x, y, transparent);
 }
 
 void Game::Sprite::startCycleFrames(int frameDurationMs)

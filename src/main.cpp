@@ -8,6 +8,7 @@
 #include <GameSprite.h>
 
 #include <images/dude.h>
+#include <images/backgroundOutside.h>
 
 // Touchscreen coordinates: (x, y) and pressure (z)
 int x, y, z;
@@ -17,8 +18,11 @@ TFT_eSPI tft = TFT_eSPI();
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 
+TFT_eSprite tft_background = TFT_eSprite(&tft);
+Game::Sprite background = Game::Sprite(&tft_background, imageBackgroundOutside, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
+
 TFT_eSprite tft_sprite = TFT_eSprite(&tft);
-Game::Sprite sprite = Game::Sprite(&tft_sprite, image_dude, 128, 128, 2);
+Game::Sprite sprite = Game::Sprite(&tft_sprite, imageDude, 128, 128, 2);
 
 void print_touch_to_serial(int touchX, int touchY, int touchZ)
 {
@@ -54,15 +58,24 @@ void setup()
 
   tft.init();
   tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
+  tft.fillScreen(TFT_GREEN);
   
+  background.sprite->setColorDepth(8);
+  background.init();
+  background.sprite->setSwapBytes(true);
+
   sprite.init();
+  sprite.pushNextFrame();
   sprite.startCycleFrames(1000);
 }
 
 void loop()
 {
   handle_touch();
+  
+  // To clear all other sprites
+  background.pushFrame(0);
 
-  sprite.pushSprite(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4);
+  sprite.pushToSprite(background, 100, 130, TFT_BLACK);
+  background.pushSprite(0, 0);
 }

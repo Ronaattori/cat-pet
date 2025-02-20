@@ -20,6 +20,7 @@ namespace Game
             void pushNextFrame();
             static void pushNextFrameCallback(TimerHandle_t timer);
             void pushSprite(uint32_t x, uint32_t y);
+            void pushToSprite(Game::Sprite toSprite, uint32_t x, uint32_t y, uint16_t transparent);
             void startCycleFrames(int frameDurationMs);
             void stopCycleFrames();
 
