@@ -72,7 +72,7 @@ void setup()
 void loop()
 {
   handle_touch();
-  
+
   // To clear all other sprites
   background.pushFrame(0);
 

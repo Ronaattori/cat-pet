@@ -2,6 +2,7 @@
 
 namespace Game
 {
+    static void pushNextFrameCallback(TimerHandle_t timer);
     class Sprite
     {
         public:
@@ -14,11 +15,8 @@ namespace Game
             TFT_eSprite* sprite;
 
             void init();
-            const uint16_t* getFrame(int frame);
-            int getNextFrame();
             void pushFrame(int frame);
             void pushNextFrame();
-            static void pushNextFrameCallback(TimerHandle_t timer);
             void pushSprite(uint32_t x, uint32_t y);
             void pushToSprite(Game::Sprite toSprite, uint32_t x, uint32_t y, uint16_t transparent);
             void startCycleFrames(int frameDurationMs);
@@ -27,5 +25,7 @@ namespace Game
         private:
             int _currentFrame = -1;        
             TimerHandle_t _timer;
+
+            const uint16_t* getFrame(int frame);
     };
 };
