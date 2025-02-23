@@ -65,7 +65,7 @@ void renderFrame()
   frameBuffer.fillScreen(TFT_BLACK);
 
   renderImage(0, 0, imageBackgroundOutside, IMAGE_BACKGROUNDOUTSIDE_WIDTH, IMAGE_BACKGROUNDOUTSIDE_HEIGHT, 0, 16);
-  renderImage(100, 130, imageDude, 16, 16, imageDudeFramecounter, 8);
+  renderImage(100, 130, imageDude, IMAGE_DUDE_WIDTH, IMAGE_DUDE_HEIGHT, imageDudeFramecounter, 8);
 
   imageDudeFramecounter = ++imageDudeFramecounter % IMAGE_DUDE_FRAMES;
 
