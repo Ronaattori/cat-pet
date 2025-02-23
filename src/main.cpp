@@ -1,30 +1,26 @@
 #include <Arduino.h>
 #include <XPT2046_Setup.h>
-#include <TFT_Setup.h>
-#include "SPIFFS.h"
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
-#include <GameSprite.h>
 
 #include <images/dude.h>
 #include <images/backgroundOutside.h>
+
+// Assuming portrait mode (usb port == down)
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
 
 // Touchscreen coordinates: (x, y) and pressure (z)
 int x, y, z;
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite frameBuffer = TFT_eSprite(&tft);
 
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 
-TFT_eSprite tft_background = TFT_eSprite(&tft);
-Game::Sprite background = Game::Sprite(&tft_background, imageBackgroundOutside, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
-
-TFT_eSprite tft_sprite = TFT_eSprite(&tft);
-Game::Sprite sprite = Game::Sprite(&tft_sprite, imageDude, 128, 128, 2);
-
-void print_touch_to_serial(int touchX, int touchY, int touchZ)
+void printTouchToSerial(int touchX, int touchY, int touchZ)
 {
   Serial.print("X = ");
   Serial.print(touchX);
@@ -35,7 +31,7 @@ void print_touch_to_serial(int touchX, int touchY, int touchZ)
   Serial.println();
 }
 
-void handle_touch()
+void handleTouch()
 {
   if (touchscreen.touched())
   {
@@ -44,8 +40,36 @@ void handle_touch()
     x = map(p.x, 200, 3700, 1, SCREEN_WIDTH);
     y = map(p.y, 240, 3800, 1, SCREEN_HEIGHT);
     z = p.z;
-    print_touch_to_serial(x, y, z);
+    printTouchToSerial(x, y, z);
   }
+}
+
+void renderImage(int x, int y, const uint16_t* image, int width, int height, int frame, int pixelScale)
+{
+  int pixelCount = width * height;
+
+  for (int i = 0; i < pixelCount; i++)
+  {
+    uint16_t color = image[i + (pixelCount * frame)];
+    if (color == TFT_BLACK) continue;
+
+    int x2 = x + ((i % width) * pixelScale);
+    int y2 = y + ((i / width) * pixelScale);
+
+    frameBuffer.fillRect(x2, y2, pixelScale, pixelScale, color);
+  }
+}
+
+void renderFrame()
+{
+  frameBuffer.fillScreen(TFT_BLACK);
+
+  renderImage(0, 0, imageBackgroundOutside, IMAGE_BACKGROUNDOUTSIDE_WIDTH, IMAGE_BACKGROUNDOUTSIDE_HEIGHT, 0, 16);
+  renderImage(100, 130, imageDude, 16, 16, imageDudeFramecounter, 8);
+
+  imageDudeFramecounter = ++imageDudeFramecounter % IMAGE_DUDE_FRAMES;
+
+  frameBuffer.pushSprite(0, 0);
 }
 
 void setup()
@@ -58,24 +82,22 @@ void setup()
 
   tft.init();
   tft.setRotation(0);
-  tft.fillScreen(TFT_GREEN);
-  
-  background.sprite->setColorDepth(8);
-  background.init();
-  background.sprite->setSwapBytes(true);
 
-  sprite.init();
-  sprite.pushNextFrame();
-  sprite.startCycleFrames(1000);
+  frameBuffer.setColorDepth(8);
+  frameBuffer.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
+  
+  renderFrame();
 }
 
+unsigned long lastRenderTime = 0;
 void loop()
 {
-  handle_touch();
-
-  // To clear all other sprites
-  background.pushFrame(0);
-
-  sprite.pushToSprite(background, 100, 130, TFT_BLACK);
-  background.pushSprite(0, 0);
+  handleTouch();
+  
+  // Render frames at about 1fps
+  if (millis() - lastRenderTime >= 1000)
+  {
+    renderFrame();
+    lastRenderTime = millis();
+  }
 }
