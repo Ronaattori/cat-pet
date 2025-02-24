@@ -8,7 +8,18 @@
 #define IMAGE_BACKGROUNDOUTSIDE_WIDTH 15
 #define IMAGE_BACKGROUNDOUTSIDE_FRAMES 1
 
-extern int imageDudeFramecounter;
+struct Sprite
+{
+    uint8_t* image;
+    uint8_t pixelScale;
+    uint8_t frames;
+    uint16_t frameDelay;
+    uint8_t x, y;
+    uint8_t w, h;
+};
+
+extern struct Sprite spriteDude;
 extern uint8_t imageDude[];
 
+extern struct Sprite spriteBackgroundOutside;
 extern uint8_t imageBackgroundOutside[];

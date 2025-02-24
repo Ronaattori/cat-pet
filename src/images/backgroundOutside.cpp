@@ -1,4 +1,14 @@
 #include <Arduino.h>
+#include <images.h>
+
+Sprite spriteBackgroundOutside
+{
+  .image = imageBackgroundOutside,
+  .pixelScale = 16,
+  .frames = 1,
+  .w = 15,
+  .h = 20
+};
 
 // array size is 300
 uint8_t imageBackgroundOutside[] PROGMEM = {

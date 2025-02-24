@@ -39,22 +39,28 @@ void handleTouch()
   }
 }
 
-void renderImage(int x, int y, const uint8_t* image, int width, int height, int frame, int pixelScale)
+void renderSprite(Sprite sprite)
 {
-  int pixelCount = width * height;
+  int pixelCount = sprite.w * sprite.h;
+  int frame = 0;
+  if (sprite.frames > 1)
+  {
+    frame = millis() / sprite.frameDelay % sprite.frames;
+  }
+
   for (int i = 0; i < pixelCount; i++)
   {
-    uint8_t color = image[i + (pixelCount * frame)];
+    uint8_t color = sprite.image[i + (pixelCount * frame)];
     if (color == TFT_BLACK) continue;
 
-    int x2 = x + ((i % width) * pixelScale);
-    int y2 = y + ((i / width) * pixelScale);
+    int x2 = sprite.x + ((i % sprite.w) * sprite.pixelScale);
+    int y2 = sprite.y + ((i / sprite.w) * sprite.pixelScale);
 
     // Draw the pixel one line at a time
     uint8_t* yp = frameBuffer + (SCREEN_WIDTH * y2 + x2);
-    for (int j = 0; j < pixelScale; j++)
+    for (int j = 0; j < sprite.pixelScale; j++)
     {
-      memset(yp + (j * SCREEN_WIDTH), color, pixelScale);
+      memset(yp + (j * SCREEN_WIDTH), color, sprite.pixelScale);
     }
   }
 }
@@ -63,8 +69,8 @@ void renderFrame()
 {
   std::fill_n(frameBuffer, SCREEN_WIDTH * SCREEN_HEIGHT, 0x0000);
 
-  renderImage(0, 0, imageBackgroundOutside, IMAGE_BACKGROUNDOUTSIDE_WIDTH, IMAGE_BACKGROUNDOUTSIDE_HEIGHT, 0, 16);
-  renderImage(100, 130, imageDude, IMAGE_DUDE_WIDTH, IMAGE_DUDE_HEIGHT, imageDudeFramecounter, 8);
+  renderSprite(spriteBackgroundOutside);
+  renderSprite(spriteDude);
 
   tft.pushImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, frameBuffer, true);
 }
@@ -80,6 +86,9 @@ void setup()
   tft.init();
   tft.setRotation(0);
 
+  spriteDude.x = 100;
+  spriteDude.y = 130;
+
   renderFrame();
 }
 
@@ -88,11 +97,8 @@ void loop()
 {
   handleTouch();
 
-  int ms = millis();
-  imageDudeFramecounter = ms / 1000 % IMAGE_DUDE_FRAMES;
-  
-  // Render frames at about 1fps
-  if (ms - lastRenderTime >= 33)
+  // Render frames at about 33fps
+  if (millis() - lastRenderTime >= 33)
   {
     renderFrame();
     lastRenderTime = millis();
