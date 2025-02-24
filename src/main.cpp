@@ -3,19 +3,14 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
-
-#include <images/dude.h>
-#include <images/backgroundOutside.h>
+#include <images.h>
 
 // Assuming portrait mode (usb port == down)
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-// Touchscreen coordinates: (x, y) and pressure (z)
-int x, y, z;
-
 TFT_eSPI tft = TFT_eSPI();
-TFT_eSprite frameBuffer = TFT_eSprite(&tft);
+uint8_t frameBuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
@@ -37,39 +32,43 @@ void handleTouch()
   {
     TS_Point p = touchscreen.getPoint();
     // Calibrate Touchscreen points with map function to the correct width and height
-    x = map(p.x, 200, 3700, 1, SCREEN_WIDTH);
-    y = map(p.y, 240, 3800, 1, SCREEN_HEIGHT);
-    z = p.z;
+    int x = map(p.x, 200, 3700, 1, SCREEN_WIDTH);
+    int y = map(p.y, 240, 3800, 1, SCREEN_HEIGHT);
+    int z = p.z;
     printTouchToSerial(x, y, z);
   }
 }
 
-void renderImage(int x, int y, const uint16_t* image, int width, int height, int frame, int pixelScale)
+void renderImage(int x, int y, const uint8_t* image, int width, int height, int frame, int pixelScale)
 {
   int pixelCount = width * height;
-
   for (int i = 0; i < pixelCount; i++)
   {
-    uint16_t color = image[i + (pixelCount * frame)];
+    uint8_t color = image[i + (pixelCount * frame)];
     if (color == TFT_BLACK) continue;
 
     int x2 = x + ((i % width) * pixelScale);
     int y2 = y + ((i / width) * pixelScale);
 
-    frameBuffer.fillRect(x2, y2, pixelScale, pixelScale, color);
+    // Draw the pixel one line at a time
+    uint8_t* yp = frameBuffer + (SCREEN_WIDTH * y2 + x2);
+    for (int j = 0; j < pixelScale; j++)
+    {
+      memset(yp + (j * SCREEN_WIDTH), color, pixelScale);
+    }
   }
 }
 
 void renderFrame()
 {
-  frameBuffer.fillScreen(TFT_BLACK);
+  std::fill_n(frameBuffer, SCREEN_WIDTH * SCREEN_HEIGHT, 0x0000);
 
   renderImage(0, 0, imageBackgroundOutside, IMAGE_BACKGROUNDOUTSIDE_WIDTH, IMAGE_BACKGROUNDOUTSIDE_HEIGHT, 0, 16);
   renderImage(100, 130, imageDude, IMAGE_DUDE_WIDTH, IMAGE_DUDE_HEIGHT, imageDudeFramecounter, 8);
 
-  imageDudeFramecounter = ++imageDudeFramecounter % IMAGE_DUDE_FRAMES;
+  imageDudeFramecounter = (imageDudeFramecounter + 1) % IMAGE_DUDE_FRAMES;
 
-  frameBuffer.pushSprite(0, 0);
+  tft.pushImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, frameBuffer, true);
 }
 
 void setup()
@@ -83,9 +82,6 @@ void setup()
   tft.init();
   tft.setRotation(0);
 
-  frameBuffer.setColorDepth(8);
-  frameBuffer.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
-  
   renderFrame();
 }
 
