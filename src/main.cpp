@@ -66,8 +66,6 @@ void renderFrame()
   renderImage(0, 0, imageBackgroundOutside, IMAGE_BACKGROUNDOUTSIDE_WIDTH, IMAGE_BACKGROUNDOUTSIDE_HEIGHT, 0, 16);
   renderImage(100, 130, imageDude, IMAGE_DUDE_WIDTH, IMAGE_DUDE_HEIGHT, imageDudeFramecounter, 8);
 
-  imageDudeFramecounter = (imageDudeFramecounter + 1) % IMAGE_DUDE_FRAMES;
-
   tft.pushImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, frameBuffer, true);
 }
 
@@ -85,13 +83,16 @@ void setup()
   renderFrame();
 }
 
-unsigned long lastRenderTime = 0;
+uint32_t lastRenderTime = 0;
 void loop()
 {
   handleTouch();
+
+  int ms = millis();
+  imageDudeFramecounter = ms / 1000 % IMAGE_DUDE_FRAMES;
   
   // Render frames at about 1fps
-  if (millis() - lastRenderTime >= 1000)
+  if (ms - lastRenderTime >= 33)
   {
     renderFrame();
     lastRenderTime = millis();
