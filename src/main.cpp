@@ -32,13 +32,11 @@ void printTouchToSerial(int touchX, int touchY, int touchZ)
 
 bool spriteTouched(int x, int y, Sprite sprite)
 {
-  if (x > sprite.x && x < sprite.x * sprite.pixelScale)
-    {
-      if (y > sprite.y && y < sprite.y * sprite.pixelScale)
-      {
-        return true;
-      }
+  if (x > spriteDude.x && x < spriteDude.x * spriteDude.pixelScale) {
+    if (y > spriteDude.y && y < spriteDude.y * spriteDude.pixelScale) {
+      return true;
     }
+  }
   return false;
 }
 
@@ -46,9 +44,8 @@ uint32_t lastTouched = 0;
 void handleTouch()
 {
   if (!touchscreen.touched()) return;
-  // Need to wait 500ms until a new touch is processed
-  if (millis() - lastTouched < 500)
-  {
+  if (millis() - lastTouched < 500) {
+    // Need to wait 500ms until a new touch is processed
     lastTouched = millis();
     return;
   }
@@ -61,8 +58,7 @@ void handleTouch()
   printTouchToSerial(x, y, z);
 
   Sprite *touchedSprite = nullptr;
-  for (Sprite *sprite : sceneSprites)
-  {
+  for (Sprite *sprite : sceneSprites) {
     if (spriteTouched(x, y, *sprite)) {
       touchedSprite = sprite;
     }
@@ -106,8 +102,7 @@ void renderFrame()
 {
   std::fill_n(frameBuffer, SCREEN_WIDTH * SCREEN_HEIGHT, 0x0000);
 
-  for (Sprite *sprite : sceneSprites)
-  {
+  for (Sprite *sprite : sceneSprites) {
     renderSprite(*sprite);
   }
 
@@ -136,8 +131,7 @@ void loop()
   handleTouch();
 
   // Render frames at about 33fps
-  if (millis() - lastRenderTime >= 33)
-  {
+  if (millis() - lastRenderTime >= 33) {
     renderFrame();
     lastRenderTime = millis();
   }
