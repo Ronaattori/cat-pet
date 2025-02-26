@@ -8,6 +8,7 @@
 #define IMAGE_BACKGROUNDOUTSIDE_WIDTH 15
 #define IMAGE_BACKGROUNDOUTSIDE_FRAMES 1
 
+#pragma once
 struct Sprite
 {
     uint8_t* image;
