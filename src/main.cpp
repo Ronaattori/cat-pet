@@ -30,10 +30,14 @@ void printTouchToSerial(int touchX, int touchY, int touchZ)
   Serial.println();
 }
 
-bool spriteTouched(int x, int y, Sprite sprite)
+bool spriteTouched(int x, int y, Sprite *sprite)
 {
-  if (x > spriteDude.x && x < spriteDude.x * spriteDude.pixelScale) {
-    if (y > spriteDude.y && y < spriteDude.y * spriteDude.pixelScale) {
+  int startX = sprite->x;
+  int endX = startX * sprite->pixelScale;
+  int startY = sprite->y;
+  int endY = startY * sprite->pixelScale;
+  if (x > startX && x < endX) {
+    if (y > startY && y < endY) {
       return true;
     }
   }
@@ -59,7 +63,7 @@ void handleTouch()
 
   Sprite *touchedSprite = nullptr;
   for (Sprite *sprite : sceneSprites) {
-    if (spriteTouched(x, y, *sprite)) {
+    if (spriteTouched(x, y, sprite)) {
       touchedSprite = sprite;
     }
   }
@@ -72,28 +76,26 @@ void handleTouch()
   lastTouched = millis();
 }
 
-void renderSprite(Sprite sprite)
+void renderSprite(Sprite *sprite)
 {
-  int pixelCount = sprite.w * sprite.h;
+  int pixelCount = sprite->w * sprite->h;
+  int pixelScale = sprite->pixelScale;
   int frame = 0;
-  if (sprite.frames > 1 && sprite.frameDelay)
-  {
-    frame = millis() / sprite.frameDelay % sprite.frames;
+  if (sprite->frames > 1 && sprite->frameDelay) {
+    frame = millis() / sprite->frameDelay % sprite->frames;
   }
 
-  for (int i = 0; i < pixelCount; i++)
-  {
-    uint8_t color = sprite.image[i + (pixelCount * frame)];
+  for (int i = 0; i < pixelCount; i++) {
+    uint8_t color = sprite->image[i + (pixelCount * frame)];
     if (color == TFT_BLACK) continue;
 
-    int x2 = sprite.x + ((i % sprite.w) * sprite.pixelScale);
-    int y2 = sprite.y + ((i / sprite.w) * sprite.pixelScale);
+    int x2 = sprite->x + ((i % sprite->w) * pixelScale);
+    int y2 = sprite->y + ((i / sprite->w) * pixelScale);
 
     // Draw the pixel one line at a time
     uint8_t *yp = frameBuffer + (SCREEN_WIDTH * y2 + x2);
-    for (int j = 0; j < sprite.pixelScale; j++)
-    {
-      memset(yp + (j * SCREEN_WIDTH), color, sprite.pixelScale);
+    for (int h = 0; h < pixelScale; h++) {
+      memset(yp + (h * SCREEN_WIDTH), color, pixelScale);
     }
   }
 }
@@ -103,7 +105,7 @@ void renderFrame()
   std::fill_n(frameBuffer, SCREEN_WIDTH * SCREEN_HEIGHT, 0x0000);
 
   for (Sprite *sprite : sceneSprites) {
-    renderSprite(*sprite);
+    renderSprite(sprite);
   }
 
   tft.pushImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, frameBuffer, true);
