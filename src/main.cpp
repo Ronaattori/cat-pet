@@ -32,9 +32,9 @@ void printTouchToSerial(int touchX, int touchY, int touchZ)
 
 bool spriteTouched(int x, int y, Sprite sprite)
 {
-  if (x > spriteDude.x && x < spriteDude.x * spriteDude.pixelScale)
+  if (x > sprite.x && x < sprite.x * sprite.pixelScale)
     {
-      if (y > spriteDude.y && y < spriteDude.y * spriteDude.pixelScale)
+      if (y > sprite.y && y < sprite.y * sprite.pixelScale)
       {
         return true;
       }
