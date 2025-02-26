@@ -1,5 +1,9 @@
 #include <Arduino.h>
 
+// Assuming portrait mode (usb port == down)
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+
 #define IMAGE_DUDE_HEIGHT 16
 #define IMAGE_DUDE_WIDTH 16
 #define IMAGE_DUDE_FRAMES 2
