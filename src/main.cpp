@@ -8,7 +8,6 @@
 #include <vector>
 #include <touch.h>
 
-
 TFT_eSPI tft = TFT_eSPI();
 uint8_t frameBuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 

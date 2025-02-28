@@ -24,7 +24,8 @@ struct Sprite
 };
 
 extern struct Sprite spriteDude;
-extern uint8_t imageDude[];
+extern uint8_t imageDudeIdle[];
+extern uint8_t imageDudeFreak[];
 
 extern struct Sprite spriteBackgroundOutside;
 extern uint8_t imageBackgroundOutside[];

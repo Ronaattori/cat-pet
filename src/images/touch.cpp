@@ -8,14 +8,16 @@ Sprite *touchingSprite = nullptr;
 void onTouch(Sprite *sprite)
 {
   if (sprite == &spriteDude) {
-    spriteDude.frameDelay = 100;
+    spriteDude.image = imageDudeFreak;
+    spriteDude.frames = 1;
   }
 }
 
 void onRelease(Sprite *sprite)
 {
   if (sprite == &spriteDude) {
-    spriteDude.frameDelay = 1000;
+    spriteDude.image = imageDudeIdle;
+    spriteDude.frames = 2;
   }
 }
 
@@ -69,10 +71,8 @@ void handleTouch(XPT2046_Touchscreen &touchscreen, std::vector<Sprite*> &sceneSp
   int z = p.z;
   printTouchToSerial(x, y, z);
 
-  // Sprite *touchedSprite = nullptr;
   for (Sprite *sprite : sceneSprites) {
     if (spriteTouched(x, y, sprite)) {
-      // touchedSprite = sprite;
       touchingSprite = sprite;
     }
   }
